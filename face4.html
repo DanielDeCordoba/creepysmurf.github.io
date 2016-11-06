@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Dynamo</title>
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/d3.v2.min.js"></script>
+    <meta name="author" content="Daniel deCordoba">
+    <style>
+	body {
+		background-color: #000;
+		margin:0px 0px 0px 0px;
+	}
+    </style>
+</head>
+
+<body>
+	<br><br><br><br><br><br><br><br><br><br><br> <!-- Space so in an ipod we can go down and hide the search bar -->
+	<!--<div style="text-align:center;">
+		<video id="basic-stream" class="videostream" autoplay="" controls=""></video>
+		<p>
+			<button id="capture-button">Capture video</button>
+			<button id="stop-button">Stop</button>
+		</p>
+	</div>-->
+
+	<script>
+
+	function errorCallback(e) {
+		if (e.code == 1) {
+			alert('User denied access to their camera');
+		} else {
+			alert('getUserMedia() not supported in your browser.');
+		}
+		//e.target.src = 'http://www.html5rocks.com/en/tutorials/video/basics/Chrome_ImF.ogv';
+	}
+
+	(function() {
+		var video = document.querySelector('#basic-stream');
+		var button = document.querySelector('#capture-button');
+		var localMediaStream = null;
+
+		button.addEventListener('click', function(e) {
+			if (navigator.getUserMedia) {
+				navigator.getUserMedia('video', function(stream) {
+					video.src = stream;
+					video.controls = true;
+					localMediaStream = stream;
+				}, errorCallback);
+			} else if (navigator.webkitGetUserMedia) {
+				navigator.webkitGetUserMedia({video: true}, function(stream) {
+					video.src = window.URL.createObjectURL(stream);
+					video.controls = true;
+					localMediaStream = stream;
+				}, errorCallback);
+			} else {
+				errorCallback({target: video});
+			}
+		}, false);
+
+		document.querySelector('#stop-button').addEventListener('click', function(e) {
+			video.pause();
+			localMediaStream.stop(); // Doesn't do anything in Chrome.
+		}, false);
+	})();
+
+	/*(function() {
+		var video = document.querySelector('#screenshot-stream');
+		var button = document.querySelector('#screenshot-button');
+		var canvas = document.querySelector('#screenshot-canvas');
+		var img = document.querySelector('#screenshot');
+		var ctx = canvas.getContext('2d');
+		var localMediaStream = null;
+
+		function sizeCanvas() {
+			// video.onloadedmetadata not firing in Chrome so we have to hack.
+			// See crbug.com/110938.
+			setTimeout(function() {
+				canvas.width = video.videoWidth;
+				canvas.height = video.videoHeight;
+				img.height = video.videoHeight;
+				img.width = video.videoWidth;
+			}, 100);
+		}
+
+		function snapshot() {
+			ctx.drawImage(video, 0, 0);
+			img.src = canvas.toDataURL('image/webp');
+		}
+
+		button.addEventListener('click', function(e) {
+			if (localMediaStream) {
+				snapshot();
+				return;
+			}
+
+			if (navigator.getUserMedia) {
+				navigator.getUserMedia('video', function(stream) {
+					video.src = stream;
+					localMediaStream = stream;
+					sizeCanvas();
+					button.textContent = 'Take Shot';
+				}, errorCallback);
+			} else if (navigator.webkitGetUserMedia) {
+				navigator.webkitGetUserMedia({video: true}, function(stream) {
+					video.src = window.URL.createObjectURL(stream);
+					localMediaStream = stream;
+					sizeCanvas();
+					button.textContent = 'Take Shot';
+				}, errorCallback);
+			} else {
+				errorCallback({target: video});
+			}
+		}, false);
+
+		video.addEventListener('click', snapshot, false);
+
+		document.querySelector('#screenshot-stop-button').addEventListener('click', function(e) {
+			video.pause();
+			localMediaStream.stop(); // Doesn't do anything in Chrome.
+		}, false);
+	})();
+
+	(function() {
+		var video = document.querySelector('#cssfilters-stream');
+		var button = document.querySelector('#capture-button2');
+		var localMediaStream = null;
+
+		var idx = 0;
+		var filters = [
+			'grayscale',
+			'sepia',
+			'blur',
+			'brightness',
+			'contrast',
+			'hue-rotate', 'hue-rotate2', 'hue-rotate3',
+			'saturate',
+			'invert',
+			''
+		];
+
+		function changeFilter(e) {
+			var el = e.target;
+			el.className = '';
+			var effect = filters[idx++ % filters.length];
+			if (effect) {
+				el.classList.add(effect);
+			}
+		}
+
+		button.addEventListener('click', function(e) {
+			if (navigator.getUserMedia) {
+				navigator.getUserMedia('video, audio', function(stream) {
+					video.src = stream;
+					localMediaStream = stream;
+				}, errorCallback);
+			} else if (navigator.webkitGetUserMedia) {
+				navigator.webkitGetUserMedia({video: true}, function(stream) {
+					video.src = window.URL.createObjectURL(stream);
+					localMediaStream = stream;
+				}, errorCallback);
+			} else {
+				errorCallback({target: video});
+			}
+		}, false);
+
+		document.querySelector('#stop-button2').addEventListener('click', function(e) {
+			video.pause();
+			localMediaStream.stop(); // Doesn't do anything in Chrome.
+		}, false);
+
+		video.addEventListener('click', changeFilter, false);
+	})();*/
+	</script>
+
+	<script>
+	/*	//Check Modernizr! (http://www.html5rocks.com/en/tutorials/getusermedia/intro/)
+		function hasGetUserMedia() {
+			return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+		}
+
+		if (hasGetUserMedia()) {
+			// Good to go!
+			alert('getUserMedia() is YES supported in your browser');
+		} else {
+			alert('getUserMedia() is not supported in your browser');
+		}*/
+
+		/*var errorCallback = function(e) {
+			console.log('Reeeejected!', e);
+		};*/
+
+/*		// Not showing vendor prefixes.
+		navigator.getUserMedia({video: true, audio: true}, function(localMediaStream) {
+			var video = document.querySelector('video');
+			video.src = window.URL.createObjectURL(localMediaStream);
+
+			// Note: onloadedmetadata doesn't fire in Chrome when using it with getUserMedia.
+			// See crbug.com/110938.
+			video.onloadedmetadata = function(e) {
+			  // Ready to go. Do some stuff.
+			};
+		}, errorCallback);*/
+
+/*		navigator.getUserMedia  = navigator.getUserMedia ||
+								  navigator.webkitGetUserMedia ||
+								  navigator.mozGetUserMedia ||
+								  navigator.msGetUserMedia;
+
+		var video = document.querySelector('video');
+
+		if (navigator.getUserMedia) {
+			navigator.getUserMedia({audio: true, video: true}, function(stream) {
+				video.src = window.URL.createObjectURL(stream);
+			}, errorCallback);
+		} else {
+			video.src = 'somevideo.webm'; // fallback.
+		}
+
+		MediaStreamTrack.getSources(function(sourceInfos) {
+			var audioSource = null;
+			var videoSource = null;
+
+			for (var i = 0; i != sourceInfos.length; ++i) {
+				var sourceInfo = sourceInfos[i];
+				if (sourceInfo.kind === 'audio') {
+					console.log(sourceInfo.id, sourceInfo.label || 'microphone');
+
+					audioSource = sourceInfo.id;
+				} else if (sourceInfo.kind === 'video') {
+					console.log(sourceInfo.id, sourceInfo.label || 'camera');
+
+					videoSource = sourceInfo.id;
+				} else {
+					console.log('Some other kind of source: ', sourceInfo);
+				}
+			}
+
+			sourceSelected(audioSource, videoSource);
+		});
+
+		function sourceSelected(audioSource, videoSource) {
+			var constraints = {
+				audio: {
+					optional: [{sourceId: audioSource}]
+				},
+				video: {
+					optional: [{sourceId: videoSource}]
+				}
+			};
+
+			navigator.getUserMedia(constraints, successCallback, errorCallback);
+		}*/
+
+/*		var hdConstraints = {
+			video: {
+				mandatory: {
+					minWidth: 1280,
+					minHeight: 720
+				}
+			}
+		};
+		navigator.getUserMedia(hdConstraints, successCallback, errorCallback);
+		var vgaConstraints = {
+			video: {
+				mandatory: {
+					maxWidth: 640,
+					maxHeight: 360
+				}
+			}
+		};
+		navigator.getUserMedia(vgaConstraints, successCallback, errorCallback);*/
+
+	</script>
+	
+	<script>
+		//Initialization for our frame
+		var rel = 1,
+			padding = 10,
+			w = (document.body.offsetWidth-2*padding),
+			h = w*rel,
+			current_mouth = 0, next_mouth = 1, 
+			current_leftEye = 0, next_leftEye = 0,
+			current_rightEye = 0, next_rightEye = 0,
+			current_leftEyebrow = 0, next_leftEyebrow = 1,
+			current_rightEyebrow = 0, next_rightEyebrow = 1,
+			current_leftPupile = 0, next_leftPupile = 0,
+			current_rightPupile = 0, next_rightPupile = 0,
+			current_leftEyelid = 0, next_leftEyelid = 1,
+			current_rightEyelid = 0, next_rightEyelid = 1,
+			defaultStroke = "white",
+			defaultFill = "none",
+			defaultStrokeWidth = 2,
+			defaultInterpolation = "basis";
+
+		//Initialize our states
+		//The order in classes sets order things are drawn
+		var classes = ["smile_high", "smile_low", "left_pupile", "right_pupile", "left_eyelid", "right_eyelid", "left_eyefill", "right_eyefill", "left_eye", "right_eye", "left_eyebrow", "right_eyebrow"];
+		var mouth = [{
+			state: 0,
+			name: "happy",
+			interpolation: "basis",
+			features: ["magenta", "none", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/2, y: 3.5*h/4},
+			size: {x: w/4, y: h/6},
+			classes: ["smile_high", "smile_low"],
+			path: [
+				[{x: 0, y: 0}, {x: 1/2, y: 1/4}, {x: 1, y: 0}], //Top lip
+				[{x: 0, y: 0}, {x: 1/2, y: 1}, {x: 1, y: 0}]] //Bottom lip
+		},{
+			state: 1,
+			name: "sad",
+			interpolation: "basis",
+			features: ["orange", "none", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/2, y: 3.5*h/4},
+			size: {x: w/4, y: h/6},
+			classes: ["smile_high", "smile_low"],
+			path: [
+				[{x: 0, y: 1}, {x: 1/2, y: 0}, {x: 1, y: 1}], //Top lip
+				[{x: 0, y: 1}, {x: 1/2, y: 3/4}, {x: 1, y: 1}]] //Bottom lip
+		},{
+			state: 2,
+			name: "neutral",
+			interpolation: "basis",
+			features: ["red", "none", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/2, y: 3.5*h/4},
+			size: {x: w/4, y: h/4},
+			classes: ["smile_high", "smile_low"],
+			path: [
+				[{x: 0, y: 1/2}, {x: 1/2, y: 1/4}, {x: 1, y: 1/2}], //Top lip
+				[{x: 0, y: 1/2}, {x: 1/2, y: 3/4}, {x: 1, y: 1/2}]] //Bottom lip
+		},{
+			state: 3,
+			name: "surprise",
+			interpolation: "basis",
+			features: ["yellow", "none", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/2, y: 3.5*h/4},
+			size: {x: w/6, y: h/2},
+			classes: ["smile_high", "smile_low"],
+			path: [
+				[{x: 0, y: 1/2}, {x: 1/2, y: 1/4}, {x: 1, y: 1/2}], //Top lip
+				[{x: 0, y: 1/2}, {x: 1/2, y: 3/4}, {x: 1, y: 1/2}]] //Bottom lip
+		}];
+		scaleElement(mouth);
+
+		var leftEye = [{
+			state: 2,
+			name: "neutral",
+			interpolation: "basis-closed",
+			features: ["white", "none", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["left_eye"],
+			path: [
+				[{x: 1/2, y: 1}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}]] //Eye
+			/*interpolation: "basis-open",
+			classes: ["left_eye_high", "left_eye_low"],
+			path: [
+				[{x: 1/2, y: 1}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 1}], //Top eye
+				[{x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 1}, {x: 1, y: 1/2}, {x: 1/2, y: 0}]] //Bottom eye*/
+		}];
+		scaleElement(leftEye);
+
+		var rightEye = [{
+			state: 2,
+			name: "neutral",
+			interpolation: "basis-closed",
+			features: ["white", "none", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["right_eye"],
+			path: [
+				[{x: 1/2, y: 1}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}]] //Eye
+			/*interpolation: "basis-open",
+			classes: ["right_eye_high", "right_eye_low"],
+			path: [
+				[{x: 1/2, y: 1}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 1}], //Top eye
+				[{x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 1}, {x: 1, y: 1/2}, {x: 1/2, y: 0}]] //Bottom eye*/
+		}];
+		scaleElement(rightEye);
+
+		var eyebrowangles = [15,30,45,60,-15,-30,-45,-60];
+		var leftEyebrow = [{
+			state: 2,
+			name: "neutral",
+			interpolation: "linear",
+			features: ["white", "none", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/4},
+			size: {x: 2*w/8, y: h/16},
+			classes: ["left_eyebrow"],
+			path: [
+				[{x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 1, y: 0}, {x: 0, y: 0}]] //Eyebrow
+			/*classes: ["left_eyebrow_high", "left_eyebrow_low", "left_eyebrow_left", "left_eyebrow_right"],
+			path: [
+				[{x: 0, y: 0}, {x: 1, y: 0}], //Top line
+				[{x: 0, y: 1}, {x: 1, y: 1}], //Bottom line
+				[{x: 0, y: 0}, {x: 0, y: 1}], //Left line
+				[{x: 1, y: 0}, {x: 1, y: 1}]] //Right line*/
+		}];
+		eyebrowGenerator(leftEyebrow, leftEyebrow[0], eyebrowangles, 1);
+		scaleElement(leftEyebrow);
+
+		var rightEyebrow = [{
+			state: 2,
+			name: "neutral",
+			interpolation: "linear",
+			features: ["white", "none", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/4},
+			size: {x: 2*w/8, y: h/16},
+			classes: ["right_eyebrow"],
+			path: [
+				[{x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 1, y: 0}, {x: 0, y: 0}]] //Eyebrow
+			/*classes: ["right_eyebrow_high", "right_eyebrow_low", "right_eyebrow_left", "right_eyebrow_right"],
+			path: [
+				[{x: 0, y: 0}, {x: 1, y: 0}], //Top line
+				[{x: 0, y: 1}, {x: 1, y: 1}], //Bottom line
+				[{x: 0, y: 0}, {x: 0, y: 1}], //Left line
+				[{x: 1, y: 0}, {x: 1, y: 1}]] //Right line*/
+		}];
+		eyebrowGenerator(rightEyebrow, rightEyebrow[0], eyebrowangles, -1);
+		scaleElement(rightEyebrow);
+
+		var pupileangles = []; for (var i = 0; i<360; i+=15) { pupileangles.push(i); }
+		var pupiledistances = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5];
+		var leftPupile = [{
+			state: 0,
+			name: "center",
+			interpolation: "basis-closed",
+			features: ["white", "white", 8], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: w/32, y: h/32},
+			classes: ["left_pupile"],
+			path: [
+				[{x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 1, y: 0}]] //Pupile
+		}];
+		pupileGenerator(leftPupile, leftPupile[0], leftEye[0].size, pupiledistances, pupileangles, 1);
+		scaleElement(leftPupile);
+
+		var rightPupile = [{
+			state: 0,
+			name: "center",
+			interpolation: "basis-closed",
+			features: ["white", "white", 8], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: w/32, y: h/32},
+			classes: ["right_pupile"],
+			path: [
+				[{x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 1, y: 0}]] //Pupile
+		}];
+		pupileGenerator(rightPupile, rightPupile[0], rightEye[0].size, pupiledistances, pupileangles, 1);
+		scaleElement(rightPupile);
+
+		var leftEyelid = [{
+			state: 0,
+			name: "closed",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["left_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 1}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["left_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["left_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["left_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["left_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["left_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		}];
+		scaleElement(leftEyelid);
+
+		var rightEyelid = [{
+			state: 0,
+			name: "closed",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["right_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 1}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["right_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["right_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["right_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["right_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		},{
+			state: 1,
+			name: "opened",
+			interpolation: "basis-open",
+			features: ["white", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: w/2, y: h/2},
+			classes: ["right_eyelid"],
+			path: [
+				[{x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 0}, {x: 0, y: 1/2}]] //Eyelid
+		}];
+		scaleElement(rightEyelid);
+
+		var leftEyefill = [{
+			state: 2,
+			name: "neutral",
+			interpolation: "basis-closed",
+			features: ["black", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: 3*w/4, y: h/2},
+			size: {x: 4+w/2, y: 4+h/2},
+			classes: ["left_eyefill"],
+			path: [
+				[{x: 1/2, y: -1/8}, {x: -1/8, y: 1/2}, {x: 1/2, y: 1}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 1}, {x: 9/8, y: 1/2}]] //Eye
+		}];
+		scaleElement(leftEyefill);
+
+		var rightEyefill = [{
+			state: 2,
+			name: "neutral",
+			interpolation: "basis-closed",
+			features: ["black", "black", 4], //Stroke, Fill, StrokeWidth
+			center: {x: w/4, y: h/2},
+			size: {x: 4+w/2, y: 4+h/2},
+			classes: ["right_eyefill"],
+			path: [
+				[{x: 1/2, y: -1/8}, {x: -1/8, y: 1/2}, {x: 1/2, y: 1}, {x: 0, y: 1/2}, {x: 1/2, y: 0}, {x: 1, y: 1/2}, {x: 1/2, y: 1}, {x: 9/8, y: 1/2}]] //Eye
+		}];
+		scaleElement(rightEyefill);
+
+		var easeMode = ["linear", "quad", "cubic", "poly(4)", "poly(5)", "sin", "exp", "circle", "elastic", "back", "bounce"];
+		var easeSufix = ["-in", "-out", "-in-out", "-out-in"];
+		var easeMode = ["exp"];
+		var easeSufix = ["-out"];
+		var easeModeIndex = 0, easeSufixIndex = 0;
+		var interpolationMode = ["linear", "step-before", "step-after", "basis", "basis-open", "basis-closed", "bundle", "cardinal", "cardinal-open", "cardinal-closed", "monotone"];
+		var interpolationModeIndex = 0;
+
+		//This is the accessor function to draw paths smoothly (we need one for each interpolation kind)
+		var line = [];
+		for (var i=0; i<interpolationMode.length; i++) {
+			line.push(
+				d3.svg.line()
+					.x(function(d) { return d.x; })
+					.y(function(d) { return d.y; })
+					.interpolate(interpolationMode[i])
+			);
+		}
+
+		//The SVG Container
+		var svg = d3.select("body").append("svg")
+			.attr("width", w + 2 * padding)
+			.attr("height", h + 2 * padding);
+
+		//We initialize the classes and draw the initial shape
+		for (var i=0; i<classes.length; i++) {
+			svg.selectAll("."+classes[i])
+				.data([{x: 0, y: 0}, {x: w, y: 0}])
+				.enter()
+				.append('path')
+				.attr('class', classes[i])
+				.attr('fill', "none");
+		}
+		
+		drawElement(mouth[current_mouth], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(leftEye[current_leftEye], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(rightEye[current_rightEye], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(leftEyebrow[current_leftEyebrow], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(rightEyebrow[current_rightEyebrow], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(leftPupile[current_leftPupile], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(rightPupile[current_rightPupile], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(leftEyelid[current_leftEyelid], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(rightEyelid[current_rightEyelid], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(leftEyefill[0], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		drawElement(rightEyefill[0], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+
+		setInterval(function() {
+			updateVariables();
+			drawElement(mouth[current_mouth], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(leftEye[current_leftEye], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(rightEye[current_rightEye], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(leftEyebrow[current_leftEyebrow], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(rightEyebrow[current_rightEyebrow], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(leftPupile[current_leftPupile], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(rightPupile[current_rightPupile], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(leftEyelid[current_leftEyelid], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(rightEyelid[current_rightEyelid], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(leftEyefill[0], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			drawElement(rightEyefill[0], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+
+
+			//Control Interpolation
+			interpolationModeIndex++;
+			if (interpolationModeIndex >= interpolationMode.length) {
+				interpolationModeIndex = 0;
+			}
+
+			//Control Transition change
+			console.log(easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			easeSufixIndex++;
+			if (easeSufixIndex >= easeSufix.length) {
+				easeSufixIndex = 0;
+				easeModeIndex++;
+				if (easeModeIndex >= easeMode.length) {
+					easeModeIndex = 0;
+				}
+			}
+		}, 2000);
+
+		function drawElement(element, transitionMode) {
+			for (var i=0; i<element.classes.length; i++) {
+				update(element.path[i], element.interpolation, element.classes[i], element.features, transitionMode);
+			}
+		}
+
+		function scaleElement(element) {
+			for (var i=0; i<element.length; i++) {
+				var linearScaleX = d3.scale.linear()
+					.domain([0,1])
+					.rangeRound([element[i].center.x-element[i].size.x/2,element[i].center.x+element[i].size.x/2]);
+				var linearScaleY = d3.scale.linear()
+					.domain([0,1])
+					.rangeRound([element[i].center.y-element[i].size.y/2,element[i].center.y+element[i].size.y/2]);
+				for (var j=0; j<element[i].path.length; j++) {
+					for (var k=0; k<element[i].path[j].length; k++) {
+						element[i].path[j][k].x = linearScaleX(element[i].path[j][k].x);
+						element[i].path[j][k].y = linearScaleY(element[i].path[j][k].y);
+					}
+				}
+			}
+		}
+
+		function updateVariables() {
+			current_mouth = next_mouth;
+			next_mouth = Math.floor(Math.random() * mouth.length);
+			if (current_mouth == next_mouth) {
+				next_mouth = (next_mouth+1)%mouth.length;
+			}
+
+			current_leftEye = next_leftEye;
+			next_leftEye = Math.floor(Math.random() * leftEye.length);
+			if (current_leftEye == next_leftEye) {
+				next_leftEye = (next_leftEye+1)%leftEye.length;
+			}
+
+			current_rightEye = next_rightEye;
+			next_rightEye = Math.floor(Math.random() * rightEye.length);
+			if (current_rightEye == next_rightEye) {
+				next_rightEye = (next_rightEye+1)%rightEye.length;
+			}
+
+			current_leftEyebrow = next_leftEyebrow;
+			next_leftEyebrow = Math.floor(Math.random() * leftEyebrow.length);
+			if (current_leftEyebrow == next_leftEyebrow) {
+				next_leftEyebrow = (next_leftEyebrow+1)%leftEyebrow.length;
+			}
+
+			current_rightEyebrow = next_rightEyebrow;
+			next_rightEyebrow = next_leftEyebrow;//Math.floor(Math.random() * rightEyebrow.length);
+			if (current_rightEyebrow == next_rightEyebrow) {
+				next_rightEyebrow = (next_rightEyebrow+1)%rightEyebrow.length;
+			}
+
+			current_leftPupile = next_leftPupile;
+			next_leftPupile = Math.floor(Math.random() * leftPupile.length);
+			if (current_leftPupile == next_leftPupile) {
+				next_leftPupile = (next_leftPupile+1)%leftPupile.length;
+			}
+
+			current_rightPupile = next_rightPupile;
+			next_rightPupile = next_leftPupile;//Math.floor(Math.random() * rightPupile.length);
+			if (current_rightPupile == next_rightPupile) {
+				next_rightPupile = (next_rightPupile+1)%rightPupile.length;
+			}
+
+			current_leftEyelid = next_leftEyelid;
+			next_leftEyelid = Math.floor(Math.random() * leftEyelid.length);
+			if (current_leftEyelid == next_leftEyelid) {
+				next_leftEyelid = (next_leftEyelid+1)%leftEyelid.length;
+			}
+
+			current_rightEyelid = next_rightEyelid;
+			next_rightEyelid = next_leftEyelid;//Math.floor(Math.random() * rightEyelid.length);
+			if (current_rightEyelid == next_rightEyelid) {
+				next_rightEyelid = (next_rightEyelid+1)%rightEyelid.length;
+			}
+		}
+
+		function update(data, interpolation, classs, features, easeFn) { //Draw a path
+			if (features[0] == undefined) {
+				features[0] = defaultStroke;
+			}
+			if (features[1] == undefined) {
+				features[1] = defaultFill;
+			}
+			if (features[2] == undefined) {
+				features[2] = defaultStrokeWidth;
+			}
+			if (interpolation == undefined) {
+				interpolation = defaultInterpolation;
+			}
+			d3.transition().select("."+classs)
+				.ease(easeFn)
+				.duration(1000)
+				.attr('d', line[interpolationMode.indexOf(interpolation)](data))
+				.attr("stroke", features[0])
+				.attr('fill', features[1])
+				.attr("stroke-width", features[2]);
+		}
+
+		function eyebrowGenerator(array, model, angles, factor) {
+			for (var i=0; i<angles.length; i++) {
+				var angle = angles[i]*Math.PI/180.0*factor;
+				var sin = Math.sin(angle);
+				var cos = Math.cos(angle);
+				var eyebrow = JSON.parse(JSON.stringify(model));
+				eyebrow.size = {x: model.size.x*cos + model.size.y*sin, y: model.size.y*cos + model.size.x*sin};
+				var xmargin = model.size.x*cos/eyebrow.size.x;
+				var ymargin = model.size.y*cos/eyebrow.size.y;
+				//eyebrow.path.
+				for (var j=0; j<eyebrow.path.length; j++){
+					for (var k=0; k<eyebrow.path[j].length; k++){
+						//Only works for values 1 and 0
+						if (k%2 == 0) {
+							switch (eyebrow.path[j][k].x) {
+								case 1:
+									eyebrow.path[j][k].x = xmargin;
+									break;
+								case 0:
+									eyebrow.path[j][k].x = 1 - xmargin;
+									break;
+								default:
+									eyebrow.path[j][k].x = 1/2;
+							}
+						} else {
+							switch (eyebrow.path[j][k].y) {
+								case 1:
+									eyebrow.path[j][k].y = ymargin;
+									break;
+								case 0:
+									eyebrow.path[j][k].y = 1 - ymargin;
+									break;
+								default:
+									eyebrow.path[j][k].y = 1/2;
+							}
+						}
+					}
+				}
+				array.push(eyebrow);
+			}
+		}
+
+		function pupileGenerator(array, model, sizeeye, distance, angles, factor) {
+			for (var i=0; i<angles.length; i++) {
+				var angle = angles[i]*Math.PI/180.0*factor;
+				var sin = Math.sin(angle)*sizeeye.y/2;
+				var cos = Math.cos(angle)*sizeeye.x/2;
+				for (var j=0; j<distance.length; j++) {
+					var pupile = JSON.parse(JSON.stringify(model));
+					pupile.center = {x: model.center.x + distance[j]*cos, y: model.center.y + distance[j]*sin};
+					array.push(pupile);
+				}
+			}
+		}
+		
+		//Space after the face
+		var space = d3.select("body").append("svg")
+			.attr("width", w + 2 * padding)
+			.attr("height", 150);
+	</script>
+</body>
+</html>

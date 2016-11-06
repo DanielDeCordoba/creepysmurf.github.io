@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Dynamo</title>
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/d3.v2.min.js"></script>
+    <meta name="author" content="Daniel deCordoba">
+    <style>
+	body {
+		background-color: #000;
+		margin:0px 0px 0px 0px;
+	}
+    </style>
+</head>
+
+<body>
+	<script>
+		//Initialization for our frame
+		var rel = 1,
+			padding = 10,
+			w = (document.body.offsetWidth),
+			h = w*rel,
+			current_face = 0,
+			next_face = 1, 
+			defaultColor = "black",
+			defaultInterpolation = "basis";
+
+		var hm = 2*h/5, //Height mouth
+			wm = w, //Width mouth
+			hmo = 3*h/5, //Height mouth offset
+			wmo = 0, //Width mouth offset
+			hel = 4*h/5, //Height eye left
+			wel = 3*w/5, //Width eye left
+			helc = h/10 + hel/4, //Height eye left center
+			welc = w/10 + wel/4, //Width eye left center
+			her = 4*h/5, //Height eye right
+			wer = 3*w/5, //Width eye right
+			herc = h/10 + her/4, //Height eye right center
+			werc = 6*w/10 + wer/4, //Width eye right center
+			hmr = h/12, //Height moustache right
+			wmr = w/2, //Width moustache right
+			hmro = h/2, //Height moustache right offset
+			wmro = w/2; //Width moustache right offset
+
+		//Initialize our states
+		var classes = ["smile_high", "smile_low", "eye_left", "eye_right", "moustache_right", "moustache_left", "moustache_right2", "moustache_left2"];
+		var faces = [{
+			state: 0,
+			name: "happy",
+			interpolation: ["basis", "basis", "basis-closed", "basis-closed"],
+			color: ["red", "red", "Lime", "Lime"],
+			path: [
+				[{x: wmo+0, y: hmo+0},       {x: wmo+wm/6, y: hmo+hm/2},         {x: wmo+5*wm/6, y: hmo+hm/2},   	 {x: wmo+wm, y: hmo+0}],
+				[{x: wmo+0, y: hmo+0},       {x: wmo+wm/6, y: hmo+hm},           {x: wmo+5*wm/6, y: hmo+hm},         {x: wmo+wm, y: hmo+0}],
+				[{x: welc+wel/2, y: helc+0}, {x: welc+0, y: helc+hel/2}, 	     {x: welc-wel/2, y: helc}, 	         {x: welc, y: helc-hel/2}],
+				[{x: werc+wer/2, y: herc+0}, {x: werc+0, y: herc+her/2}, 	     {x: werc-wer/2, y: herc}, 	         {x: werc, y: herc-her/2}],
+				[{x: wmro+0, y: hmro+hmr/4}, {x: wmro+wmr/4, y: hmro-hmr/2},     {x: wmro+5*wmr/8, y: hmro+hmr/2},   {x: wmro+6*wmr/8, y: hmro+12*hmr/16}, {x: wmro+7*wmr/8, y: hmro+hmr/4}, {x: wmro+13*wmr/16, y: hmro+0}],
+				[{x: wmro-0, y: hmro+hmr/4}, {x: wmro-wmr/4, y: hmro-hmr/2},     {x: wmro-5*wmr/8, y: hmro+hmr/2},   {x: wmro-6*wmr/8, y: hmro+12*hmr/16}, {x: wmro-7*wmr/8, y: hmro+hmr/4}, {x: wmro-13*wmr/16, y: hmro+0}],
+				[{x: wmro+0, y: hmro+3*hmr/4}, {x: wmro+wmr/4, y: hmro+9*hmr/8},          {x: wmro+7*wmr/8, y: hmro+hmr}, {x: wmro+15*wmr/16, y: hmro+hmr/4}, {x: wmro+13*wmr/16, y: hmro+0}],
+				[{x: wmro-0, y: hmro+3*hmr/4}, {x: wmro-wmr/4, y: hmro+9*hmr/8},          {x: wmro-7*wmr/8, y: hmro+hmr}, {x: wmro-15*wmr/16, y: hmro+hmr/4}, {x: wmro-13*wmr/16, y: hmro+0}]]
+		},
+		{
+			state: 1,
+			name: "sad",
+			interpolation: ["basis", "basis", "basis-closed", "basis-closed"],
+			color: ["magenta", "magenta", "LawnGreen", "LawnGreen"],
+			path: [
+				[{x: wmo+0, y: hmo+hm/2}, {x: wmo+wm/6, y: hmo+hm/4},   {x: wmo+5*wm/6, y: hmo+hm/4},   {x: wmo+w, y: hmo+hm/2}],
+				[{x: wmo+0, y: hmo+hm/2}, {x: wmo+wm/6, y: hmo+3*hm/4}, {x: wmo+5*wm/6, y: hmo+3*hm/4}, {x: wmo+w, y: hmo+hm/2}]]
+		},
+		{
+			state: 2,
+			name: "neutral",
+			interpolation: ["basis", "basis", "basis-closed", "basis-closed"],
+			color: ["orange", "orange", "SkyBlue", "SkyBlue"],
+			path: [
+				[{x: wmo+0, y: hmo+hm}, {x: wmo+wm/6, y: hmo+0},   {x: wmo+5*wm/6, y: hmo+0},   {x: wmo+w, y: hmo+hm}],
+				[{x: wmo+0, y: hmo+hm}, {x: wmo+wm/6, y: hmo+hm/2}, {x: wmo+5*wm/6, y: hmo+hm/2}, {x: wmo+w, y: hmo+hm}]]
+		}];
+		var easeMode = ["linear", "quad", "cubic", "poly(4)", "poly(5)", "sin", "exp", "circle", "elastic", "back", "bounce"];
+		var easeSufix = ["-in", "-out", "-in-out", "-out-in"];
+		var easeModeIndex = 0, easeSufixIndex = 0;
+		var interpolationMode = ["linear", "step-before", "step-after", "basis", "basis-open", "basis-closed", "bundle", "cardinal", "cardinal-open", "cardinal-closed", "monotone"];
+		var interpolationModeIndex = 0;
+
+		//This is the accessor function to draw paths smoothly (we need one for each interpolation kind)
+		var line = [];
+		for (var i=0; i<interpolationMode.length; i++) {
+			line.push(
+				d3.svg.line()
+					.x(function(d) { return d.x; })
+					.y(function(d) { return d.y; })
+					.interpolate(interpolationMode[i])
+			);
+		}
+
+		var line2 = d3.svg.line()
+			.x(function(d) { return d.x; })
+			.y(function(d) { return d.y; })
+			.interpolate("basis-closed");
+
+		//The SVG Container
+		var svg = d3.select("body").append("svg")
+			.attr("width", w + 2 * padding)
+			.attr("height", h + 2 * padding);
+
+		//We initialize the classes and draw the initial shape
+		for (var i=0; i<classes.length; i++) {
+			svg.selectAll("."+classes[i])
+				.data(faces[current_face].path[i])
+				.enter()
+				.append('path')
+				.attr('class', classes[i])
+				.attr('fill', "none");
+			redraw(faces[current_face].path[i], faces[current_face].interpolation[i], classes[i], faces[current_face].color[i], easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+		}
+
+		function redraw(data, interpolation, classs, color, easeFn) {
+			if (color == undefined) {
+				color = defaultColor;
+			}
+			if (interpolation == undefined) {
+				interpolation = defaultInterpolation;
+			}
+			d3.transition().select("."+classs)
+				.ease(easeFn)
+				.duration(1000)
+				.attr('d', line[interpolationMode.indexOf(interpolation)](data))
+				.attr("stroke", color)
+				.attr("stroke-width", 2);
+
+		}
+
+		setInterval(function() {
+			current_face = next_face;
+			next_face = Math.floor(Math.random() * 3);
+			if (current_face == next_face) {
+				next_face = (next_face+1)%3;
+			}
+			for (var i=0; i<classes.length; i++) {
+				redraw(faces[current_face].path[i], faces[current_face].interpolation[i]/*interpolationMode[interpolationModeIndex]*/, classes[i], faces[current_face].color[i], "");
+			}
+
+			//Control Interpolation
+			interpolationModeIndex++;
+			if (interpolationModeIndex >= interpolationMode.length) {
+				interpolationModeIndex = 0;
+			}
+
+			//Control Transition change
+			console.log(easeMode[easeModeIndex]+easeSufix[easeSufixIndex]);
+			easeSufixIndex++;
+			if (easeSufixIndex >= easeSufix.length) {
+				easeSufixIndex = 0;
+				easeModeIndex++;
+				if (easeModeIndex >= easeMode.length) {
+					easeModeIndex = 0;
+				}
+			}
+		}, 3000);
+	</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Dynamo</title>
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/d3.v2.min.js"></script>
+    <meta name="author" content="Daniel deCordoba">
+    <style>
+      .curve, .line {
+        fill: none;
+        stroke-width: 1px;
+      }
+      .curve {
+        stroke: red;
+        stroke-width: 3px;
+      }
+      .control {
+        fill: #ccc;
+        stroke: #000;
+        stroke-width: .5px;
+      }
+      .t, .controltext {
+        font-size: .6em;
+      }
+    </style>
+</head>
+
+<body>
+    <div>
+		<script>
+			//Initialization for our frame
+			var rel = 0.5,
+				w = 600,
+				h = w*rel,
+				padding = 10,
+				smile_low1 = [{x: 0, y: 0}, {x: w/6, y: h}, {x: 5*w/6, y: h}, {x: w, y: 0}],
+				smile_high1 = [{x: w, y: 0}, {x: 5*w/6, y: h/2}, {x: w/6, y: h/2}, {x: 0, y: 0}],
+				smile_low2 = [{x: 0, y: h}, {x: w/6, y: h}, {x: 5*w/6, y: h}, {x: w, y: h}],
+				smile_high2 = [{x: w, y: h}, {x: 5*w/6, y: h/2}, {x: w/6, y: h/2}, {x: 0, y: h}],
+				current_face = 1,
+				next_face = 2;
+
+			//This is the accessor function to draw paths smoothly
+			var line = d3.svg.line()
+				.x(function(d) { return d.x; })
+				.y(function(d) { return d.y; })
+				.interpolate("basis");
+
+			//The SVG Container
+			var svgContainer = d3.select("body").append("svg")
+				.attr("width", w + 2 * padding)
+				.attr("height", h + 2 * padding);
+
+			//The line SVG Path we draw
+			var lineGraph = svgContainer.append("path")
+				.attr("d", line(smile_low1))
+				.attr("stroke", "blue")
+				.attr("stroke-width", 2)
+				.attr("fill", "none");
+
+			/*var lineGraph2 = svgContainer.append("path")
+				.attr("d", line(smile_high1))
+				.attr("stroke", "red")
+				.attr("stroke-width", 2)
+				.attr("fill", "none");*/
+
+			function redraw(data, id, color) {
+				console.log(color, svgContainer);
+				var path = svgContainer.selectAll("path")
+					.data(data)
+					.enter()
+					.append('path')
+					.attr("d", function(d) {line(d);} )
+					.attr('id', id)
+					.attr('fill', "none");
+					//.attr('transform', 'translate(150,150)');
+
+				d3.transition().select("path")
+					//.ease('bounce')
+					.duration(400)
+					.attr('d', line(data))
+					.attr("stroke", color)
+					.attr("stroke-width", 2);
+			}
+
+			setInterval(function() {
+				var smile_low = [], smile_high = [];
+				var color = "green";
+				current_face = next_face;
+				switch (next_face) {
+					case 1:
+						smile_low = smile_low1;
+						smile_high = smile_high1;
+						color = "blue";
+						next_face = 2;
+						break;
+					case 2:
+						smile_low = smile_low2;
+						smile_high = smile_high2;
+						color = "red";
+						next_face = 1;
+						break;
+				}
+				//redraw(smile_low, "smile_low", color);
+				redraw(smile_high, "smile_high", color);
+			}, 2500);
+		</script>
+    </div>
+</body>
+</html>
